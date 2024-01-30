@@ -2,9 +2,11 @@ import atexit
 import logging.config
 import logging.handlers
 import multiprocessing as mp
-import queue
-from typing import Dict, List, Union
 import pathlib
+import queue
+from typing import Any, Dict, List, Union
+
+import paho.mqtt.client as mqttc
 
 
 class RotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -45,7 +47,7 @@ class QueueListenerHandler(logging.handlers.QueueHandler):
         print("Stopping listener")
         self._listener.stop()
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord):
         """Emit a record."""
         return super().emit(record)
 
@@ -59,3 +61,52 @@ def getHandlerByName(name: str) -> logging.Handler:
         if handler.name == name:
             return handler
     raise KeyError(name)
+
+
+class MqttHandler(logging.Handler):
+    def __init__(self, *args, mqtt_config: Dict[str, Any], **kwargs):
+        super().__init__(**kwargs)
+
+        self._topic = mqtt_config['topic']
+        self._qos = mqtt_config.get('qos', 0)
+        self._retain = mqtt_config.get('retain', False)
+        self._started = False
+        self._host = mqtt_config['host']
+        self._port = mqtt_config.get('port', 1883)
+        self._keepalive = mqtt_config.get('keepalive', 60)
+        self._bind_address = mqtt_config.get('bind_address', '')
+
+        self._client = mqttc.Client()
+        username = mqtt_config.get('username', None)
+        password = mqtt_config.get('password', None)
+        if username is not None and password is not None:
+            self._client.username_pw_set(username, password)
+        self._client.connect_async(self._host, self._port, self._keepalive, self._bind_address)
+
+    def emit(self, record: logging.LogRecord):
+        """Emit a record."""
+        if not self._started:
+            self.loop_start()
+
+        try:
+            msg = self.format(record)
+            self._client.publish(
+                topic=self._topic + "/" + record.levelname.lower(),
+                payload=msg,
+                qos=self._qos,
+                retain=self._retain)
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+    def __del__(self):
+        self.loop_stop()
+
+    def loop_start(self):
+        if not self._started:
+            self._client.loop_start()
+            self._started = True
+
+    def loop_stop(self):
+        self._client.loop_stop()
+        self._started = False

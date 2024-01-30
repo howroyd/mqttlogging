@@ -7,12 +7,19 @@ import multiprocessing as mp
 import tomlkit
 
 
-def setup_logging(config_filename: str) -> logging.Logger:
+def setup_logging(config_filename: str, secrets: str = None) -> logging.Logger:
     """Setup logging."""
     config = None
     with open(config_filename, 'r') as f:
         config = tomlkit.load(f)
     assert config is not None
+
+    if secrets:
+        with open(secrets, 'r') as f:
+            secrets = tomlkit.load(f)
+        if secrets:
+            config["handlers"]["mqtt_error"]["mqtt_config"]["username"] = secrets["handlers"]["mqtt_error"]["mqtt_config"]["username"]
+            config["handlers"]["mqtt_error"]["mqtt_config"]["password"] = secrets["handlers"]["mqtt_error"]["mqtt_config"]["password"]
 
     logging.config.dictConfig(config)
 
@@ -35,7 +42,7 @@ def do_something(n: int, level: str = None) -> None:
 
 
 def main():
-    logger = setup_logging("example_config.toml")
+    logger = setup_logging("example_config.toml", secrets="secrets.toml")
     logger.critical("Starting main")
 
     workers = [
@@ -53,10 +60,10 @@ def main():
     for p in processes:
         p.join()
 
-    with cf.ProcessPoolExecutor() as executor:
-        #  NOTE: On Python 3.8 this will throw at exit https://github.com/python/cpython/issues/83285
-        for i, fn in enumerate(workers):
-            executor.submit(functools.partial(fn, i))
+    # with cf.ProcessPoolExecutor() as executor:
+    #     #  NOTE: On Python 3.8 this will throw at exit https://github.com/python/cpython/issues/83285
+    #     for i, fn in enumerate(workers):
+    #         executor.submit(functools.partial(fn, i))
 
     logger.critical("Ending main\n\n")
 
