@@ -3,23 +3,43 @@ import functools
 import logging.config
 import logging.handlers
 import multiprocessing as mp
+from typing import Union
 
 import tomlkit
+
+
+def deep_merge(a: dict, b: dict, path=[]):
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                deep_merge(a[key], b[key], path + [str(key)])
+            elif a[key] != b[key]:
+                raise Exception('Conflict at ' + '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
+
+
+def to_dict(tomldoc: Union[tomlkit.TOMLDocument, tomlkit.items.Table]) -> dict:
+    """Convert a TOML document to a dict."""
+    for key, value in tomldoc.items():
+        if isinstance(value, tomlkit.items.Table):
+            tomldoc[key] = to_dict(value)
+    return dict(tomldoc)
 
 
 def setup_logging(config_filename: str, secrets: str = None) -> logging.Logger:
     """Setup logging."""
     config = None
     with open(config_filename, 'r') as f:
-        config = tomlkit.load(f)
+        config = to_dict(tomlkit.load(f))
     assert config is not None
 
     if secrets:
         with open(secrets, 'r') as f:
-            secrets = tomlkit.load(f)
+            secrets = to_dict(tomlkit.load(f))
         if secrets:
-            config["handlers"]["mqtt_error"]["mqtt_config"]["username"] = secrets["handlers"]["mqtt_error"]["mqtt_config"]["username"]
-            config["handlers"]["mqtt_error"]["mqtt_config"]["password"] = secrets["handlers"]["mqtt_error"]["mqtt_config"]["password"]
+            functools.reduce(deep_merge, [config, secrets])
 
     logging.config.dictConfig(config)
 
