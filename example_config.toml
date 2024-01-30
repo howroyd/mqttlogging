@@ -36,7 +36,7 @@ stream = "ext://sys.stdout"
 filters = ["nonerrorfilter"]
 
 [handlers.file_text]
-class = "logging.handlers.RotatingFileHandler"
+class = "handlers.RotatingFileHandler"
 level = "DEBUG"
 formatter = "json"
 filename = "logs/log.jsonl"

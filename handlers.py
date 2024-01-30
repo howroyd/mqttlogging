@@ -4,6 +4,14 @@ import logging.handlers
 import multiprocessing as mp
 import queue
 from typing import Dict, List, Union
+import pathlib
+
+
+class RotatingFileHandler(logging.handlers.RotatingFileHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        extension = pathlib.Path(kwargs["filename"]).suffix
+        self.namer = lambda name: name.replace(extension, "") + extension
 
 
 def _resolve_handlers(handlers: Union[str, logging.config.ConvertingList]) -> List[Dict]:
