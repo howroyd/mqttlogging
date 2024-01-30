@@ -39,7 +39,7 @@ filters = ["nonerrorfilter"]
 class = "logging.handlers.RotatingFileHandler"
 level = "DEBUG"
 formatter = "json"
-filename = "logs/my_app.log"
+filename = "logs/log.jsonl"
 maxBytes = 10_000
 backupCount = 3
 
