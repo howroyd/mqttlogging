@@ -42,6 +42,7 @@ formatter = "json"
 filename = "logs/log.jsonl"
 maxBytes = 10_000
 backupCount = 3
+encoding = "UTF-8"
 
 [handlers.queue_listener_handler]
 "()" = "handlers.QueueListenerHandler"
