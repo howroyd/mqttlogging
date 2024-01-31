@@ -8,16 +8,16 @@ from typing import Union
 import tomlkit
 
 
-def deep_merge(a: dict, b: dict, path=[]):
-    for key in b:
-        if key in a:
-            if isinstance(a[key], dict) and isinstance(b[key], dict):
-                deep_merge(a[key], b[key], path + [str(key)])
-            elif a[key] != b[key]:
+def deep_merge(dest: dict, src: dict, path=[]):
+    for key in src:
+        if key in dest:
+            if isinstance(dest[key], dict) and isinstance(src[key], dict):
+                deep_merge(dest[key], src[key], path + [str(key)])
+            elif dest[key] != src[key]:
                 raise Exception('Conflict at ' + '.'.join(path + [str(key)]))
         else:
-            a[key] = b[key]
-    return a
+            dest[key] = src[key]
+    return dest
 
 
 def to_dict(tomldoc: Union[tomlkit.TOMLDocument, tomlkit.items.Table]) -> dict:
@@ -63,6 +63,7 @@ def do_something(n: int, level: str = None) -> None:
 
 def main():
     logger = setup_logging("example_config.toml", secrets="secrets.toml")
+
     logger.critical("Starting main")
 
     workers = [
@@ -73,17 +74,17 @@ def main():
         functools.partial(do_something, level="CRITICAL"),
     ]
 
-    processes = [mp.Process(target=fn, args=(i,))
-                 for i, fn in enumerate(workers)]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    # processes = [mp.Process(target=fn, args=(i,))
+    #              for i, fn in enumerate(workers)]
+    # for p in processes:
+    #     p.start()
+    # for p in processes:
+    #     p.join()
 
-    # with cf.ProcessPoolExecutor() as executor:
-    #     #  NOTE: On Python 3.8 this will throw at exit https://github.com/python/cpython/issues/83285
-    #     for i, fn in enumerate(workers):
-    #         executor.submit(functools.partial(fn, i))
+    with cf.ProcessPoolExecutor() as executor:
+        #  NOTE: On Python 3.8 this will throw at exit https://github.com/python/cpython/issues/83285
+        for i, fn in enumerate(workers):
+            executor.submit(functools.partial(fn, i))
 
     logger.critical("Ending main\n\n")
 

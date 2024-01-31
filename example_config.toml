@@ -6,7 +6,7 @@ format = "[%(levelname)s|%(module)s|L%(lineno)d|%(threadName)s] %(asctime)s: %(m
 datefmt = "%Y-%m-%dT%H:%M:%S%z"
 
 [formatters.json]
-"()" = "formatters.JsonFormatter"
+"()" = "mqttlogging.formatters.JsonFormatter"
 [formatters.json.fmt_keys]
 level = "levelname"
 message = "message"
@@ -19,7 +19,7 @@ line = "lineno"
 # thread_name = "threadName"
 
 [filters.nonerrorfilter]
-"()" = "filters.NonErrorFilter"
+"()" = "mqttlogging.filters.NonErrorFilter"
 maxlevel = "INFO"
 
 [handlers.console_stderr]
@@ -36,7 +36,7 @@ stream = "ext://sys.stdout"
 filters = ["nonerrorfilter"]
 
 [handlers.file_text]
-class = "handlers.RotatingFileHandler"
+class = "mqttlogging.handlers.RotatingFileHandler"
 level = "DEBUG"
 formatter = "json"
 filename = "logs/log.jsonl"
@@ -45,7 +45,7 @@ backupCount = 3
 encoding = "UTF-8"
 
 [handlers.mqtt_error]
-class = "handlers.MqttHandler"
+class = "mqttlogging.handlers.MqttHandler"
 level = "WARNING"
 formatter = "json"
 #filters = ["nonerrorfilter"]
@@ -56,7 +56,7 @@ host = "96.69.1.254"
 # password = "mypassword"
 
 [handlers.queue_listener_handler]
-"()" = "handlers.QueueListenerHandler"
+"()" = "mqttlogging.handlers.QueueListenerHandler"
 handlers = [
     "cfg://handlers.console_stdout",
     "cfg://handlers.console_stderr",

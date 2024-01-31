@@ -81,7 +81,9 @@ class MqttHandler(logging.Handler):
         password = mqtt_config.get('password', None)
         if username is not None and password is not None:
             self._client.username_pw_set(username, password)
+        print(f"Connecting MQTT logging to {self._host}:{self._port}")
         self._client.connect_async(self._host, self._port, self._keepalive, self._bind_address)
+        self.loop_start()
 
     def emit(self, record: logging.LogRecord):
         """Emit a record."""

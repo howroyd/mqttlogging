@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "PyInstaller", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mqttlogging"
+version = "0.0.0-dev0"
+authors = [{ name = "Simon Howroyd", email = "howroydlsu@gmail.com" }]
+description = "A set of logging handlers that publish to an MQTT broker"
+keywords = ["mqtt", "logging", "toml"]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: System :: Logging"
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/howroyd/mqttlogging"
+"Repository" = "https://github.com/howroyd/mqttlogging"
+"Bug Tracker" = "https://github.com/howroyd/mqttlogging/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
