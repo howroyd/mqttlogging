@@ -1,8 +1,8 @@
-# pyMultiLogger
+# MQTT Logging
 
 Very much work in progress.
 
-Extension of the python logging module to allow for multiple handlers to be used at the same time.  Specifically aimed at Python 3.8 because many of the examples online don't work due to old bugs.
+Tools for the python logging module to allow for multiple handlers to be used at the same time including MQTT.  Specifically aimed at Python 3.8 because many of the examples online don't work due to old bugs.
 
 The example shows using a TOML config file, whereas all other examples I have found use JSON or YAML.  This relies upon [tomlkit](https://pypi.org/project/tomlkit/) because the standard library parser can't handle tables with empty string names, required for the root logger.
 
